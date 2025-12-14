@@ -375,22 +375,43 @@ class Toolchain:
                 part=entry.part,
             )
             callback = UsageMetadataCallbackHandler()
-            res = llm.with_structured_output(CuedScript, include_raw=True).invoke(
-                messages, config=RunnableConfig(callbacks=[callback])
-            )
-            script: CuedScript = res["parsed"]
-            logger.debug("cue.tokens usage={usage}", usage=callback.usage_metadata)
-
-            # Ensure speaker registry covers all chunk speakers even if the LLM omits narrator/default entries.
-            chunk_speakers = [chunk.speaker for chunk in script.chunks]
-            merged_speakers = list(dict.fromkeys([*script.speakers, *chunk_speakers]))
-            if merged_speakers != script.speakers:
-                script = script.model_copy(update={"speakers": merged_speakers})
-                logger.debug("cue.speakers merged={speakers}", speakers=merged_speakers)
-
-            xml_payload = script.to_xml(
-                encoding="unicode", pretty_print=True, skip_empty=True
-            )
+            retries = 3
+            while True:
+                try:
+                    logger.debug(
+                        "Invoking LLM for cue generation messages={} retries={}",
+                        len(messages),
+                        retries,
+                    )
+                    res = llm.with_structured_output(
+                        CuedScript, include_raw=True
+                    ).invoke(messages, config=RunnableConfig(callbacks=[callback]))
+                    logger.debug("LLM responded usage={}", callback.usage_metadata)
+                    script: CuedScript = res["parsed"]
+                    # Ensure speaker registry covers all chunk speakers even if the LLM omits narrator/default entries.
+                    chunk_speakers = [chunk.speaker for chunk in script.chunks]
+                    merged_speakers = list(
+                        dict.fromkeys([*script.speakers, *chunk_speakers])
+                    )
+                    if merged_speakers != script.speakers:
+                        script = script.model_copy(update={"speakers": merged_speakers})
+                        logger.debug(
+                            "cue.speakers merged={speakers}", speakers=merged_speakers
+                        )
+                    xml_payload = script.to_xml(
+                        encoding="unicode", pretty_print=True, skip_empty=True
+                    )
+                    break
+                except Exception as ve:
+                    logger.error(
+                        "cue.validation_failed text_name={name} part={part}: {errors}",
+                        name=entry.text_name,
+                        part=entry.part,
+                        errors=ve,
+                    )
+                    retries -= 1
+                    if retries <= 0:
+                        raise ve
             assert isinstance(xml_payload, str)
             xml_path.write_text(xml_payload)
 
