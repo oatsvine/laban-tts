@@ -34,26 +34,6 @@
 * Paths use `pathlib.Path`. Prefer Unicode output.
 * Tools (configured in `pyproject.toml`): Black (100 cols), Pyright (strict).
 
-### Typer Style (MANDATORY)
-- Always declare parameters with `typing.Annotated` + `typer.Argument`/`typer.Option`; never assign `= Argument(...)` or `= Option(...)`. Example from Typer docs:
-  ```python
-  @app.command()
-  def main(
-      user: Annotated[str, Argument(help="Username")],
-      token: Annotated[str, Option(envvar="API_TOKEN", help="Auth token")],
-      limit: Annotated[int, Option(help="Max items")] = 10,
-  ):
-      ...
-  ```
-- Ordering matters: all required params (no defaults) first; defaults after. Avoid “non-default argument follows default argument” by keeping `Option(...` required params before any defaulted ones.
-- AWLAYS use env-backed required options instead of manual `_require_env` helpers (`token: Annotated[str, Option(envvar="CIVITAI_API_KEY")]`).
-- When migrating from `fire`, move `__init__` level arguments to individual command functions requiring these values. Remove class pattern ENTIRELY, use `envvar` for environment mapped argument and define small state dataclass (no dictionary) only if statefullness really needed using composition.
-- Strongly avoid wrapping infernal functions, prefer implementing your logic directly in the command function.
-- Do not wrap commands in thin helpers; put command logic directly in the Typer command functions.
-- Prefer Typer’s `ctx.obj` pattern over module globals: set shared config in the callback, read it in commands, and keep the stored object minimal (only what must be shared for that invocation).
-- Use option callbacks for upfront validation/materialization (e.g., ensuring directories exist) instead of hidden side effects inside command bodies.
-- Reference: Typer tutorial on arguments/options with `Annotated` (`https://typer.tiangolo.com/tutorial/arguments/optional/`).
-
 ## 4) Testing
 
 * Unless requested, don't add tests, just spot test the CLI using your REPL.

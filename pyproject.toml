@@ -13,7 +13,6 @@ authors = [
 ]
 keywords = ["tts", "audiobook", "cue scripts", "laban profiles", "chatterbox-tts", "langchain"]
 dependencies = [
-  "fire",
   "loguru",
   "pydantic",
   "pydantic-xml",
@@ -21,6 +20,7 @@ dependencies = [
   "langchain-openai",
   "langchain-text-splitters",
   "tiktoken",
+  "typer",
   "unstructured[md]",
   "pydub",
   "soundfile",
