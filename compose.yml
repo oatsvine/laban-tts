@@ -1,0 +1,44 @@
+services:
+  tts:
+    build:
+      context: .
+      args:
+        UNAME: ${UNAME:-user}
+        PUID: ${PUID:-1000}
+        PGID: ${PGID:-1000}
+    tty: true
+    stdin_open: true
+    entrypoint:
+      - bash
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WORKSPACE_DIR=/data/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/usr/local/src
+      - /home/${USER:-user}/Workspace:/data/workspace:rw
+      - cache:/data/cache:rw
+    restart: never
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+                - video
+
+  # codex:
+  #   extends: tts
+  #   entrypoint:
+  #     - codex
+  #     - --config
+  #     - projects./src.trust_level=trusted
+
+volumes:
+  cache:
+    driver: local
