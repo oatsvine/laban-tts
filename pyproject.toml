@@ -7,7 +7,7 @@ name = "laban-tts"
 version = "0.1.0"
 description = "Voice acting driven audiobook synthesis using LLM generated cue scripts."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 authors = [
   { name = "Santu Mariani<santumariani@proton.me>" }
 ]
@@ -29,8 +29,9 @@ dependencies = [
 [dependency-groups]
 dev = [
   "pytest",
-  "pytest-asyncio",
-  "pyright",
+  "pytest-datadir",
+  "basedpyright",
+  "ruff",
   "black",
 ]
 dev-torch = [
@@ -42,19 +43,36 @@ chatterbox = [
   # "pkuseg==0.0.25",
 ]
 
-[tool.setuptools]
-packages = ["laban_tts"]
+# [tool.uv.extra-build-dependencies]
+# pkuseg = ["numpy"]
 
-[tool.uv.extra-build-dependencies]
-pkuseg = ["numpy"]
+[project.scripts]
+media-watchdog = "media_watchdog:main"
 
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
 
 [tool.pyright]
-include = ["laban_tts", "tests"]
-exclude = ["**/node_modules", "**/__pycache__"]
-typeCheckingMode = "basic"
+pythonVersion = "3.12"
+include = ["src", "scripts"]
+typeCheckingMode = "standard"
+enableTypeIgnoreComments = false
+deprecateTypingAliases = false
+reportUnnecessaryTypeIgnoreComment = "error"
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
 
 [tool.pytest.ini_options]
 testpaths = [
-  "tests",
+    "tests",
 ]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["B009", "B010"]

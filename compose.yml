@@ -3,9 +3,9 @@ services:
     build:
       context: .
       args:
-        UNAME: ${UNAME:-user}
-        PUID: ${PUID:-1000}
-        PGID: ${PGID:-1000}
+        UNAME: ${UNAME}
+        PUID: ${PUID}
+        PGID: ${PGID}
     tty: true
     stdin_open: true
     entrypoint:
@@ -16,7 +16,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - .:/usr/local/src
+      - .:/src:rw
       - /home/${USER:-user}/Workspace:/data/workspace:rw
       - cache:/data/cache:rw
     restart: never
@@ -32,12 +32,31 @@ services:
                 - compute
                 - video
 
-  # codex:
-  #   extends: tts
-  #   entrypoint:
-  #     - codex
-  #     - --config
-  #     - projects./src.trust_level=trusted
+  codex:
+    extends: tts
+    profiles:
+      - cli
+    environment:
+      - CODEX_HOME=/opt/codex
+    entrypoint:
+      - codex
+      - --config
+      - projects./src.trust_level=trusted
+      - --search
+      - --dangerously-bypass-approvals-and-sandbox
+    volumes:
+      - ./.codex-home:/opt/codex:rw
+
+  claude:
+    extends: tts
+    profiles:
+      - cli
+    environment:
+      - CLAUDE_MODEL=sonnet[1m]
+    entrypoint:
+      - claude
+    volumes:
+      - ./.codex-home:/home/${UNAME}/.claude:rw
 
 volumes:
   cache:

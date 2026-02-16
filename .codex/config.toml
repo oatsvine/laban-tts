@@ -1,0 +1,14 @@
+[mcp_servers.server-sequential-thinking]
+command = "server-sequential-thinking"
+
+[mcp_servers.mcp-server-time]
+command = "mcp-server-time"
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+
+[mcp_servers.markitdown]
+command = "markitdown-mcp"
+
+# [mcp_servers.context7.env]
+# MY_ENV_VAR = "MY_ENV_VALUE"
